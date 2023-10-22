@@ -12,15 +12,34 @@ export default function SettingsScreen() {
   const [snackVisible, setSnackVisible] = useState(false)
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
+  const handleModelValueChange = (newValue) => {
+    //when value of radio is changed show the snack after 500ms that value is changed
+    setTimeout(() => {
+      setSnackVisible(true)
+    }, 1000)
+    setVisible(false)//set the visiblity of modal after value is changed
+
+    //setting themes states and user preferences
+    if (newValue == 'system') {
+      setUserPreference('system')
+      setuserTheme('system')
+    }
+
+    else {
+      setUserPreference(newValue);
+      setuserTheme(newValue)
+    }
+
+  }
 
   return (
     <View style={{ flex: 1, padding: _spacing, backgroundColor: theme.colors.background }}>
       <Portal>
-        <Snackbar wrapperStyle={{marginTop:0}} duration={1000} elevation='5' style={{ backgroundColor: theme.colors.tertiary }}
+        <Snackbar wrapperStyle={{ marginTop: 0 }} duration={1000} elevation='5' style={{ backgroundColor: theme.colors.tertiary }}
           visible={snackVisible}
           onDismiss={() => setSnackVisible(false)}
         >
-          {`${userPreference} theme is set`} 
+          {`${userPreference} theme is set`}
         </Snackbar>
       </Portal>
       <Text variant='titleLarge' style={{ color: theme.colors.onBackground, marginBottom: _spacing, textAlign: 'center' }}>Settings</Text>
@@ -50,26 +69,7 @@ export default function SettingsScreen() {
           </Button>
           <Portal style={{ padding: _spacing, widht: 200 }}>
             <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={{ backgroundColor: theme.colors.background, padding: 20, alignItems: 'center' }}>
-              <RadioButton.Group onValueChange={newValue => {
-                //when value of radio is changed show the snack after 500ms that value is changed
-                setTimeout(() => {
-                  setSnackVisible(true)
-                }, 500)
-                setVisible(false)//set the visiblity of modal after value is changed
-
-                //setting themes states and user preferences
-                if (newValue == 'system') {
-                  setUserPreference('system')
-                  setuserTheme('system')
-                }
-
-                else {
-                  setUserPreference(newValue);
-                  setuserTheme(newValue)
-                }
-
-              }}
-                value={userTheme} style={{ gap: 30 }}>
+              <RadioButton.Group onValueChange={newValue => handleModelValueChange(newValue)} value={userPreference} style={{ gap: 30 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
                   <RadioButton value="system" />
                   <Text>System Theme</Text>
