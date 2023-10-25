@@ -10,7 +10,7 @@ const Tab = createMaterialBottomTabNavigator();
 export default function MainScreens() {
     const theme = useTheme()
     return (
-        <Tab.Navigator   shifting={false} activeColor={theme.colors.primary} labeled={true} barStyle={{ backgroundColor: theme.colors.background }}>
+        <Tab.Navigator  shifting={true} activeColor={theme.colors.primary} labeled={true} barStyle={{ backgroundColor: theme.colors.background }}>
             <Tab.Screen name="HomeScreen" component={HomeScreen} options={{
                 title: 'Home',
                 tabBarIcon: () => <Icon name="home" color={theme.colors.onBackground} size={24} />

@@ -1,25 +1,38 @@
-import { View, Text, StyleSheet, Image, ScrollView, Alert } from 'react-native'
-import { React, useState } from 'react'
-import { useTheme } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
-import { TextInput, Button, ActivityIndicator } from 'react-native-paper';
+import { React, useState, useEffect } from 'react';
+import helpers from '../Helper';
+import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, HelperText, TextInput, useTheme, Text } from 'react-native-paper';
 export default function SignUpScreen({ navigation }) {
     const [Email, setEmail] = useState('')
     const [Password, setPassword] = useState('')
     const [Confirmpassword, setConfirmpassword] = useState('')
     const [Username, setUsername] = useState('')
     const [signingUp, setSigningUp] = useState(false)
+    const [error, setError] = useState('')
     const theme = useTheme()
+    useEffect(() => {
+        try {
+            if (Username.length == 0 || Username.length < 3)
+                throw new Error('username cannot be empty or less than 3 characters')
+            if (Email.length == 0)
+                throw new Error('email cannot be empty')
+            if (!helpers.isValidEmail(Email))
+                throw new Error('Invaid email format')
+            if (Password.length == 0)
+                throw new Error('password cannot be empty')
+            if (Password.length < 8)
+                throw new Error('password must be 8 characters long')
+            if (Password != Confirmpassword && Confirmpassword.length > 0)
+                throw new Error('password does not match with confirm password.')
+        } catch (error) {
+            setError(error.message)
+            return;
+        }
+        //if no error then setting the error state as empty
+        setError('')
+    })
     const signUp = () => {
-        if (Email.length == 0 || Password.length == 0 || Username.length == 0 || Confirmpassword.length == 0) {
-            Alert.alert('email or password cannot be empty')
-            return;
-        }
-        if (Password != Confirmpassword) {
-            Alert.alert('password must match')
-            return;
-        }
-
         setSigningUp(true)
         auth().createUserWithEmailAndPassword(Email, Password)
             .then(response => {
@@ -35,28 +48,41 @@ export default function SignUpScreen({ navigation }) {
             <View style={{ flex: 1, justifyContent: 'center', alignContent: 'center' }}>
                 <View style={{ flex: 1, justifyContent: 'center', alignContent: 'center' }}>
                     <View style={[styles.logo_container]}>
-                        <Image resizeMode='contain' style={styles.logo_image} source={require('../assets/signup.png')} />
-                        <Text style={{ marginTop: 20, fontSize: 25, color: theme.colors.primary }}>User SignUp</Text>
+                        {/* <Image resizeMode='contain' style={styles.logo_image} source={require('../assets/signup.png')} /> */}
+                        <Text style={{ marginTop: 20, color: theme.colors.primary }} variant='displaySmall'>Get Started</Text>
+                        <Text style={{ color: theme.colors.primary }} variant='bodyLarge'>its quick and easy</Text>
                     </View>
                     <View style={styles.inputs_container}>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             <TextInput value={Username} onChangeText={setUsername} left={<TextInput.Icon icon='account' />} mode='outlined' label={'Enter UserName'} />
+                            {
+                                error.includes('username') &&
+                                <HelperText type='error'>{error}</HelperText>
+                            }
                         </View>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             <TextInput left={<TextInput.Icon icon='email' />} onChangeText={setEmail} value={Email} mode='outlined' label={'Enter Email'} />
+                            {
+                                error.includes('email') &&
+                                <HelperText type='error'>{error}</HelperText>
+                            }
                         </View>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             <TextInput value={Password} onChangeText={setPassword} left={<TextInput.Icon icon='lock' />} secureTextEntry={true} mode='outlined' label={'Enter Password'} />
+                            {
+                                error.includes('password') &&
+                                <HelperText type='error'>{error}</HelperText>
+                            }
                         </View>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             <TextInput left={<TextInput.Icon icon="lock-check" />} secureTextEntry={true} mode='outlined' label={'Confirm Password'} value={Confirmpassword} onChangeText={setConfirmpassword} />
                         </View>
 
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             {
                                 signingUp ?
                                     <ActivityIndicator color={theme.colors.onBackground} /> :
-                                    <Button mode='contained' onPress={signUp}>
+                                    <Button disabled={error.length > 0 ? true : false} mode='contained' onPress={signUp}>
                                         Sign Up
                                     </Button>
                             }
@@ -69,47 +95,18 @@ export default function SignUpScreen({ navigation }) {
     )
 }
 const styles = StyleSheet.create({
-
     logo_container: {
         flex: 0.3,
-        color: 'white',
         marginBottom: 40,
-        // backgroundColor: 'red',
         alignItems: 'center',
         justifyContent: 'flex-end',
     },
-
     logo_image: { width: 120, height: 120 },
     inputs_container: {
-
         alignItems: 'center',
         justifyContent: 'flex-start',
         flex: 0.6,
         gap: 20,
-
+        padding: 20
     },
-    input_view: {
-        width: '90%',
-        // backgroundColor:'red'
-    },
-    input: {
-        borderRadius: 10,
-        width: '100%',
-
-        paddingVertical: 6,
-        paddingHorizontal: 10
-    },
-    button: {
-        padding: 1,
-        paddingHorizontal: 15,
-        paddingVertical: 7,
-        borderRadius: 10,
-        width: '100%',
-    },
-    button_text: {
-        fontSize: 18,
-        textAlign: 'center'
-    }
-
-
 })

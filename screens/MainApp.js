@@ -11,7 +11,7 @@ const MainApp = () => {
     const { userTheme, setuserTheme, userPreference, setUserPreference } = useContext(ThemeContext)
     const currentSystemTheme = useColorScheme()
     const currentTheme = userPreference == 'system' ? currentSystemTheme : userTheme
-    SystemNavigationBar.setNavigationColor(currentTheme == 'dark' ? 'black' : 'white').then(() => console.log('color is set'));
+    SystemNavigationBar.setNavigationColor(currentTheme == 'dark' ? 'black' : 'white').then(callback => null);
     // Set an initializing state whilst Firebase connects
     const [initializing, setInitializing] = useState(true);
     const [user, setUser] = useState();

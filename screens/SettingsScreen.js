@@ -15,7 +15,7 @@ export default function SettingsScreen() {
   const handleModelValueChange = (newValue) => {
     //when value of radio is changed show the snack after 500ms that value is changed
     setTimeout(() => {
-      setSnackVisible(true)
+      setSnackVisible(true) //setting the snack visiblity to true
     }, 1000)
     setVisible(false)//set the visiblity of modal after value is changed
 

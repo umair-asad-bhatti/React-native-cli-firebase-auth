@@ -20,7 +20,7 @@ export default function EmailVerificationScreen({ navigation }) {
             }
         })
     }, [user])
-    if(!user.emailVerified){
+    if (!user.emailVerified) {
         return (
             <View>
                 <Text style={[{ fontSize: 25, padding: 20 }]}>Email verification is required....</Text>

@@ -1,52 +1,80 @@
-import { View, StyleSheet, Image, ScrollView, Alert, ActivityIndicator } from 'react-native'
-import React, { useContext, useState } from 'react'
+import { View, StyleSheet, ScrollView, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import auth from '@react-native-firebase/auth';
 import { useTheme } from 'react-native-paper';
-import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+import helpers from '../Helper';
+import { TextInput, Button, Text, HelperText,ActivityIndicator } from 'react-native-paper';
 export default function LoginScreen({ navigation }) {
     const [Email, setEmail] = useState('')
     const [Password, setPassword] = useState('')
+    const [error, setError] = useState('')
     const [loggingIn, setLoggingIn] = useState(false)
     const theme = useTheme()
     const signIn = () => {
-        if (Email.length == 0 || Password.length == 0) {
-            Alert.alert('email or password cannot be empty')
+        setLoggingIn(true)
+        auth()
+            .signInWithEmailAndPassword(Email, Password)
+            .then(r => setLoggingIn(false))
+            .catch(error => {
+                Alert.alert("Invalid Credentials")
+                setLoggingIn(false)
+                return;
+            })
+    }
+    //error handling and inputs validation
+    useEffect(() => {
+        try {
+            if (Email.length == 0)
+                throw new Error('email cannot be empty')
+            if (!helpers.isValidEmail(Email))
+                throw new Error('Invaid email format')
+            if (Password.length == 0)
+                throw new Error('password cannot be empty')
+            if (Password.length < 8)
+                throw new Error('password must be 8 characters long')
+        } catch (error) {
+            setError(error.message)
             return;
         }
-        setLoggingIn(true)
-        try {
-            auth()
-                .signInWithEmailAndPassword(Email, Password)
-                .then(r => setLoggingIn(false))
-                .catch(error => { Alert.alert(error.message); setLoggingIn(false) })
-        } catch (error) {
-            console.log('error');
-        }
+        //if no error then setting the error state as empty
+        setError('')
 
-    }
+    }, [Email, Password])
     return (
         <ScrollView contentContainerStyle={{ backgroundColor: theme.colors.background, flex: 1 }}>
             <View style={{ flex: 1, justifyContent: 'center', alignContent: 'center' }}>
                 <View style={{ flex: 1, justifyContent: 'center', alignContent: 'center' }}>
                     <View style={[styles.logo_container]}>
-                        <Image resizeMode='contain' style={styles.logo_image} source={require('../assets/login.png')} />
-                        <Text style={{ color: theme.colors.primary, marginTop: 20 }} variant='displayMedium'>SignIn</Text>
+                        {/* <Image resizeMode='contain' style={styles.logo_image} source={require('../assets/login.png')} /> */}
+                        <Text style={{ color: theme.colors.onBackground, marginTop: 20 }} variant='displaySmall'>Welcome Back</Text>
+                        <Text style={{ color: theme.colors.onBackground }} variant='bodyLarge'>Enter your credentials</Text>
                     </View>
                     <View style={styles.inputs_container}>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             {/* <Text style={[textStyles, { marginBottom: 5, marginLeft: 5 }]}>Enter Email</Text> */}
-                            <TextInput left={<TextInput.Icon icon='email' />} onChangeText={setEmail} value={Email} mode='outlined' label={'Enter Email'} />
+                            <TextInput left={<TextInput.Icon icon='email' />} onChangeText={(newemail) => setEmail(newemail)} value={Email} mode='outlined' label={'Enter Email'} />
+                            {
+                                error.includes('email') &&
+                                <HelperText type='error'>
+                                    {error}
+                                </HelperText>
+                            }
                         </View>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             {/* <Text style={[textStyles, { marginBottom: 5, marginLeft: 5 }]}>Enter Password</Text> */}
                             <TextInput left={<TextInput.Icon icon='lock' />} secureTextEntry={true} mode='outlined' label={'Enter Password'} onChangeText={setPassword} />
-
+                            {
+                                error.includes('password') &&
+                                <HelperText type='error'>
+                                    {error}
+                                </HelperText>
+                            }
                         </View>
-                        <View style={styles.input_view}>
+                        <View style={{ width: '100%' }}>
                             {
                                 loggingIn ?
                                     <ActivityIndicator color={theme.colors.onBackground} /> :
-                                    <Button mode='contained' onPress={signIn}>
+                                    <Button disabled={error.length > 0 ? true : false} mode='contained' onPress={signIn}>
                                         Sign in
                                     </Button>
                             }
@@ -75,34 +103,10 @@ const styles = StyleSheet.create({
 
     logo_image: { width: 120, height: 120 },
     inputs_container: {
-
         alignItems: 'center',
         justifyContent: 'flex-start',
         flex: 0.5,
         gap: 20,
-
-    },
-    input_view: {
-        width: '90%',
-        // backgroundColor:'red'
-    },
-    input: {
-        borderRadius: 10,
-        width: '100%',
-
-        paddingVertical: 6,
-        paddingHorizontal: 10
-    },
-    button: {
-        padding: 1,
-        paddingHorizontal: 15,
-        paddingVertical: 7,
-        borderRadius: 10,
-        width: '100%',
-    },
-    button_text: {
-        fontSize: 18,
-        textAlign: 'center'
+        padding: 20
     }
-
 })

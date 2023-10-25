@@ -3,39 +3,63 @@ import React, { useState, useEffect } from 'react'
 import { useTheme, Text, Button, Divider, ActivityIndicator, List, TextInput, Snackbar, SegmentedButtons, Portal } from 'react-native-paper'
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth'
-export default function AddInfoScreen() {
+export default function AddInfoScreen({ navigation }) {
 
   const _spacing = 20;
   const [snackVisible, setSnackVisible] = useState(false);
+  const [listExpanded, setListExpended] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [amount, setAmount] = useState('')
   const [category, setcategory] = useState('expense')
-  const [listExpanded, setListExpended] = useState(false)
+  const [type, setType] = useState('')
   const theme = useTheme() //react native paper theme
+  const types = [
+    {
+      title: 'Shopping'
+    },
+    {
+      title: 'Rent'
+    },
+    {
+      title: 'Home Cleaning'
+    },
+    {
+      title: 'Medicine'
+    },
+    {
+      title: 'Test'
+    },
+    {
+      title: 'Test2'
+    },
+  ]
   const postDataToFirestore = async () => {
-    if (amount <= 0 || amount.length == 0) {
-      Alert.alert("Amount must be greater than 0s!!!")
+    if (amount <= 0 || amount.length == 0 || type.length == 0) {
+      Alert.alert("Provide all values")
       return
     }
     setIsSubmitting(true)
     const userDocSnapshot = firestore().collection('Users').doc(auth().currentUser.uid)
-    const userCollection = await userDocSnapshot.collection('Data').add({
-      amount, category, date: new Date()
+    await userDocSnapshot.collection('Data').add({
+      amount, category, date: new Date(), type
     }).then(() => {
       setSnackVisible(true)
       setIsSubmitting(false)
       setAmount("")
+      navigation.navigate("HomeScreen")
     })
   }
-
   return (
     <View style={{ flex: 1, gap: 20, backgroundColor: theme.colors.background, padding: _spacing }}>
-      <Snackbar wrapperStyle={{ marginTop: 0 }} duration={1000} elevation='5' style={{ backgroundColor: theme.colors.tertiary }}
-        visible={snackVisible}
-        onDismiss={() => setSnackVisible(false)}
-      >
-        Saved Successfully
-      </Snackbar>
+      <Portal>
+
+        <Snackbar wrapperStyle={{ marginTop: 0 }} duration={1000} elevation='5' style={{ backgroundColor: theme.colors.tertiary }}
+          visible={snackVisible}
+          onDismiss={() => setSnackVisible(false)}
+        >
+          Saved Successfully
+        </Snackbar>
+      </Portal>
 
       <Text variant='titleLarge' style={{ textAlign: 'center' }}>Enter Details </Text>
       <Divider bold />
@@ -61,28 +85,33 @@ export default function AddInfoScreen() {
             ]}
           />
         </View>
+
         <Divider bold />
-        <View style={{ justifyContent: 'center', alignItems: 'center', gap: 20 }}>
-          <Text variant='titleLarge'>Amount: </Text>
+        <View style={{ justifyContent: 'center', gap: 20 }}>
+          <Text variant='titleLarge'>Select Type of {category}</Text>
+          <List.Accordion
+
+            title={type.length == 0 ? 'Select Type' : type}
+            expanded={listExpanded}
+            onPress={() => { setListExpended(!listExpanded) }}>
+            <ScrollView style={{ height: 200 }}>
+              {
+                types.map((obj, index) => {
+                  return (
+
+                    <List.Item key={index} onPress={() => { setType(obj.title); setListExpended(false) }} title={obj.title} right={props => type == obj.title ? <List.Icon {...props} icon="check" /> : ''} />
+                  )
+                })
+              }
+            </ScrollView>
+          </List.Accordion>
+        </View>
+
+        <Divider bold />
+        <View style={{ justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+
           <TextInput keyboardType='numeric' placeholder='Enter Amount' mode='outlined' value={amount} onChangeText={setAmount} style={{ width: '100%' }} />
         </View>
-        <Divider bold />
-        <List.Accordion
-          title="Select Type"
-          left={props => <List.Icon {...props} icon="folder" />}
-          expanded={listExpanded}
-          onPress={() => { setListExpended(!listExpanded) }}>
-          <ScrollView style={{ height: 200 }}>
-            <List.Item title="Fruit" />
-            <List.Item title="Rent" />
-            <List.Item title="Cooking" />
-            <List.Item  title="Home" />
-            <List.Item title="Shopping" />
-            <List.Item title="Food" />
-            <List.Item title="Clothing" />
-          </ScrollView>
-        </List.Accordion>
-
         <Divider bold />
         {
           !isSubmitting ? <Button mode='contained' onPress={postDataToFirestore}>
