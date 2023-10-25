@@ -48,7 +48,8 @@ export default function HomeScreen({ navigation }) {
             <FlatList onScroll={onScroll}
               data={data}
               renderItem={({ item }) => <ExpenseCard item={item} theme={theme} />}
-            /> :
+            />
+            :
             <NoDataFound />
         }
       </View>
